@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+
+<head>
+    <title>Weather Repeater</title>
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #dce5f0;
+            color: #a7bed9;
+            font-size: 20px;
+        }
+        
+        embed {
+            margin-left: 10%;
+            margin-right: 10%;
+            margin-top: 4%;
+        }
+        
+        #listeners {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            margin: 30px;
+        }
+        
+        #logo {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            margin: 20px;
+        }
+    </style>
+    <script src='/socket.io/socket.io.js'></script>
+    <script>
+        var socket = io(),
+            p = 'bg'
+
+        var msg = new SpeechSynthesisUtterance();
+        var voices = window.speechSynthesis.getVoices();
+        msg.voice = voices[2]; // Note: some voices don't support altering params
+        msg.voiceURI = 'false';
+        msg.volume = 1; // 0 to 1
+        msg.rate = 0.75; // 0.1 to 10
+        msg.pitch = 6; //0 to 2
+
+        $(document).ready(function () {
+
+        })
+
+
+        socket.on('listeners', function (data) {
+            $('#listeners').text('Listeners: ' + data['listeners'])
+        })
+
+        socket.on('weather', function (data) {
+
+            $('#listeners').text('Listeners: ' + data['listeners'])
+
+            var world = document.getElementById("world");
+            var doc = world.getSVGDocument();
+            doc.querySelector("[cc=" + p + "]").style.fill = "#a7bed9";
+            code = data['location']['countryCode']
+            var c = code.toLowerCase(code)
+            p = c
+            doc.querySelector("[cc=" + c + "]").style.fill = "#83a6ca";
+
+            msg = new SpeechSynthesisUtterance();
+            voices = window.speechSynthesis.getVoices();
+            msg.voice = voices[2]; // Note: some voices don't support altering params
+            msg.voiceURI = 'false';
+            msg.volume = 1; // 0 to 1
+            msg.rate = 0.9; // 0.1 to 10
+            msg.pitch = 1; //0 to 2
+
+            msg.text = data['string'];
+            speechSynthesis.speak(msg);
+
+        });
+
+        socket.on('error', console.error.bind(console));
+        socket.on('message', console.log.bind(console));
+    </script>
+</head>
+
+<body>
+
+    <embed src="map.svg" type="image/svg+xml" id="world" width="80%" height="80%">
+    <div id="listeners"></div>
+    <div id="logo">
+        <a href='https://rawb.it' target='_blank'><img src='logo.png' width='50px' height='50px' title='Rawb!t'></a>
+    </div>
+</body>
+
+</html>
